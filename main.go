@@ -6,10 +6,10 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/", TestServer)
-	http.ListenAndServe(":8080", nil)
+	http.HandleFunc("/login", LoginHandler)
+	http.ListenAndServe(":8090", nil)
 }
 
-func TestServer(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "TEST! Subpath %s", r.URL.Path[1:])
+func LoginHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Login successful!")
 }
