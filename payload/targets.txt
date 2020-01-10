@@ -1,0 +1,8 @@
+POST http://localhost:8090/login
+@/Users/kurni.famili/code/personal/simple-login/payload/user1.json
+
+POST http://localhost:8090/login
+@/Users/kurni.famili/code/personal/simple-login/payload/user2.json
+
+POST http://localhost:8090/login
+@/Users/kurni.famili/code/personal/simple-login/payload/user3.json
