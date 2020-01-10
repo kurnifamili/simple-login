@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"../database"
-	"runtime"
 )
 
 var (
@@ -19,7 +18,7 @@ type LoginRequest struct {
 }
 
 func main() {
-	runtime.GOMAXPROCS(30)
+	//runtime.GOMAXPROCS(20)
 	http.HandleFunc("/login", LoginHandler)
 	http.ListenAndServe(":8090", nil)
 }
