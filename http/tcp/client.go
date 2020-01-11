@@ -6,7 +6,6 @@ import (
 	"log"
 	"../common"
 	"encoding/json"
-	"fmt"
 	"strings"
 	"errors"
 )
@@ -46,7 +45,7 @@ func (m *TcpClientImpl) SendLoginRequest(request *common.LoginRequest) (string, 
 
 	response, err := rw.ReadString('\n')
 	if err != nil {
-		fmt.Println("Error in reading reply from TCP server, err:", err.Error())
+		//fmt.Println("Error in reading reply from TCP server, err:", err.Error())
 		return "", err
 	}
 

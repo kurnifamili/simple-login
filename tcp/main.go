@@ -48,10 +48,8 @@ func handleLogin(c net.Conn) {
 	userID, _, _, err := dbClient.GetUser(req.Username, req.Password)
 	if err != nil {
 		c.Write([]byte(err.Error() + "\n"))
-		fmt.Println("Error in getting user, err=", err.Error())
 	} else {
 		c.Write([]byte("UserID " + userID + "\n"))
-		fmt.Println("UserID:", userID)
 	}
 
 	c.Close()
