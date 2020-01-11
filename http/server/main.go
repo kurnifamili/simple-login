@@ -5,26 +5,32 @@ import (
 	"fmt"
 	"net/http"
 
-	"../database"
+	"../common"
+	"../tcp"
 )
 
 var (
-	dbClient = database.NewDatabaseClient()
+	tcpClient tcp.ITcpClient
 )
 
-type LoginRequest struct {
-	Username string
-	Password string
-}
+const (
+	HttpPort = "8090"
+)
 
 func main() {
 	//runtime.GOMAXPROCS(20)
+
+	// init tcpClient
+	tcpClient = tcp.NewTcpClient()
+
+	// start server server
 	http.HandleFunc("/login", LoginHandler)
-	http.ListenAndServe(":8090", nil)
+	fmt.Printf("Starting HTPP server at port %s..\n", HttpPort)
+	http.ListenAndServe(":"+HttpPort, nil)
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	var loginReq LoginRequest
+	var loginReq common.LoginRequest
 
 	// Parse request body into User object
 	err := json.NewDecoder(r.Body).Decode(&loginReq)
@@ -33,7 +39,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, _, _, err := dbClient.GetUser(loginReq.Username, loginReq.Password)
+	userID, err := tcpClient.SendLoginRequest(&loginReq)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
