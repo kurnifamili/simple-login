@@ -1,5 +1,4 @@
-package database
-//package main
+package main
 
 import (
 	"database/sql"

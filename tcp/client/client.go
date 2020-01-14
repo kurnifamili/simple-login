@@ -1,10 +1,10 @@
-package tcp
+package client
 
 import (
 	"bufio"
 	"net"
 	"log"
-	"../common"
+	"../../common"
 	"encoding/json"
 	"strings"
 	"errors"
@@ -13,15 +13,32 @@ import (
 const (
 	TcpPort = "8091"
 )
+
+var (
+	client ITcpClient
+)
 type ITcpClient interface {
 	SendLoginRequest(request *common.LoginRequest) (string, error)
 }
 
 type TcpClientImpl struct {
+	Client *bufio.ReadWriter
 }
 
-func NewTcpClient() ITcpClient {
-	return &TcpClientImpl{
+func GetClient() ITcpClient {
+	if client == nil {
+		InitClient()
+	}
+	return client
+}
+
+func InitClient() {
+	conn, err := net.Dial("tcp", ":"+TcpPort)
+	if err != nil {
+		log.Fatal(err)
+	}
+	client =  &TcpClientImpl{
+		Client: bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn)),
 	}
 }
 
@@ -30,6 +47,7 @@ func (m *TcpClientImpl) SendLoginRequest(request *common.LoginRequest) (string, 
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer conn.Close()
 
 	rw := bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn))
 	enc := json.NewEncoder(rw)

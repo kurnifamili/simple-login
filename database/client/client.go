@@ -1,12 +1,16 @@
-package database
+package client
 
 import (
 	"database/sql"
-	"log"
 	"errors"
+	"log"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 var (
+	client IDatabaseClient
+
 	errInvalidCredentials = errors.New("the username and password are not valid")
 )
 
@@ -18,14 +22,22 @@ type DatabaseClientImpl struct {
 	SQLClient *sql.DB
 }
 
-func NewDatabaseClient() IDatabaseClient {
+func GetClient() IDatabaseClient {
+	if client == nil {
+		InitClient()
+	}
+
+	return client
+}
+
+func InitClient() {
 	db, err := sql.Open("mysql",
 		"root@tcp(127.0.0.1:3306)/test_login")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return &DatabaseClientImpl{
+	client = &DatabaseClientImpl{
 		SQLClient: db,
 	}
 }
