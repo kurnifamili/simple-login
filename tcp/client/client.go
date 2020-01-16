@@ -2,27 +2,27 @@ package client
 
 import (
 	"bufio"
-	"net"
-	"log"
-	"../../common"
 	"encoding/json"
-	"strings"
 	"errors"
-)
+	"fmt"
+	"log"
+	"net"
+	"strings"
 
-const (
-	TcpPort = "8091"
+	"../../common"
+	"github.com/fatih/pool"
 )
 
 var (
 	client ITcpClient
 )
+
 type ITcpClient interface {
 	SendLoginRequest(request *common.LoginRequest) (string, error)
 }
 
 type TcpClientImpl struct {
-	Client *bufio.ReadWriter
+	Pool pool.Pool
 }
 
 func GetClient() ITcpClient {
@@ -33,37 +33,46 @@ func GetClient() ITcpClient {
 }
 
 func InitClient() {
-	conn, err := net.Dial("tcp", ":"+TcpPort)
+	connPool, err := pool.NewChannelPool(common.TcpInitialConnections, common.TcpMaxConnections, connectionFactory)
 	if err != nil {
 		log.Fatal(err)
 	}
-	client =  &TcpClientImpl{
-		Client: bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn)),
+	client = &TcpClientImpl{
+		Pool: connPool,
 	}
 }
 
+func connectionFactory() (net.Conn, error) {
+	return net.Dial("tcp", ":"+common.TcpPort)
+}
+
 func (m *TcpClientImpl) SendLoginRequest(request *common.LoginRequest) (string, error) {
-	conn, err := net.Dial("tcp", ":"+TcpPort)
+	fmt.Printf("Current TCP open connections %d\n", m.Pool.Len())
+
+	conn, err := m.Pool.Get()
 	if err != nil {
-		log.Fatal(err)
+		log.Println("Error in gettting available connection!")
 	}
 	defer conn.Close()
 
 	rw := bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn))
 	enc := json.NewEncoder(rw)
 	err = enc.Encode(request)
+	//rw.WriteString(request.Username + " " + request.Password + common.TcpMsgDelimiterStr)
 	if err != nil {
+		log.Println(err)
 		return "", err
 	}
 
 	err = rw.Flush()
 	if err != nil {
+		log.Println(err)
 		return "", err
 	}
 
-	response, err := rw.ReadString('\n')
+	response, err := rw.ReadString(common.TcpMsgDelimiterByte)
 	if err != nil {
-		//fmt.Println("Error in reading reply from TCP server, err:", err.Error())
+		log.Println(err)
 		return "", err
 	}
 
@@ -74,11 +83,3 @@ func (m *TcpClientImpl) SendLoginRequest(request *common.LoginRequest) (string, 
 
 	return respArr[1], nil
 }
-
-//func Open() (*bufio.ReadWriter, error) {
-//	conn, err := net.Dial("tcp", TcpPort)
-//	if err != nil {
-//		return nil, errors.Wrap(err, "Dialing "+TcpPort+" failed")
-//	}
-//	return bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn)), nil
-//}

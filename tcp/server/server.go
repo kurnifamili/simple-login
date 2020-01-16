@@ -24,6 +24,7 @@ func Start() {
 			fmt.Println(err)
 			continue
 		}
+
 		// handle the connection
 		go handler.LoginHandler(c)
 	}

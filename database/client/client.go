@@ -6,6 +6,7 @@ import (
 	"log"
 
 	_ "github.com/go-sql-driver/mysql"
+	"../../common"
 )
 
 var (
@@ -37,12 +38,17 @@ func InitClient() {
 		log.Fatal(err)
 	}
 
+	db.SetMaxOpenConns(common.DBMaxOpenConnections)
+
 	client = &DatabaseClientImpl{
 		SQLClient: db,
 	}
 }
 
 func (m *DatabaseClientImpl) GetUser(username string, password string) (string, string, string, error) {
+	stats := m.SQLClient.Stats()
+	log.Printf("Current open DB conns %d\n", stats.OpenConnections)
+
 	row := m.SQLClient.QueryRow("select id, username, password from users where username = ?", username)
 
 	var (
