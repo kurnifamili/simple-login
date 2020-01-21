@@ -19,7 +19,7 @@ type ITcpClient interface {
 	SendRequest(request string) (response string, err error)
 }
 
-type TcpClientImpl struct {
+type tcpClientImpl struct {
 	Pool pool.Pool
 }
 
@@ -35,7 +35,7 @@ func InitClient() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client = &TcpClientImpl{
+	client = &tcpClientImpl{
 		Pool: connPool,
 	}
 }
@@ -44,7 +44,7 @@ func connectionFactory() (net.Conn, error) {
 	return net.Dial("tcp", ":"+common.TcpPort)
 }
 
-func (m *TcpClientImpl) SendRequest(request string) (response string, err error) {
+func (m *tcpClientImpl) SendRequest(request string) (response string, err error) {
 	//fmt.Printf("Current TCP open connections %d\n", m.Pool.Len())
 
 	conn, err := m.Pool.Get()

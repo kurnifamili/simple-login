@@ -21,7 +21,7 @@ type IDatabaseClient interface {
 	GetUser(username string, password string) (userID string, err error)
 }
 
-type DatabaseClientImpl struct {
+type databaseClientImpl struct {
 	SQLClient *sql.DB
 }
 
@@ -48,12 +48,12 @@ func InitClient() {
 		log.Fatal(err)
 	}
 
-	client = &DatabaseClientImpl{
+	client = &databaseClientImpl{
 		SQLClient: db,
 	}
 }
 
-func (m *DatabaseClientImpl) GetUser(username string, password string) (userID string, err error) {
+func (m *databaseClientImpl) GetUser(username string, password string) (userID string, err error) {
 	//stats := m.SQLClient.Stats()
 	//log.Printf("Current open DB conns %d\n", stats.OpenConnections)
 
