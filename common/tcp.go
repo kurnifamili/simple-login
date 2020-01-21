@@ -2,8 +2,8 @@ package common
 
 import "strconv"
 
-type TcpRequestType int16
-type TcpResponseType int16
+type TcpRequestType uint16
+type TcpResponseType uint16
 
 const (
 	TcpLoginRequest TcpRequestType = 0
