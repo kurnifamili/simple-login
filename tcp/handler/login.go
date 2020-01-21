@@ -1,36 +1,22 @@
 package handler
 
 import (
-	"net"
-	"encoding/json"
-	"log"
-
-	"../../common"
 	dbClient "../../database/client"
-	"io"
+	"errors"
 )
 
-func LoginHandler(c net.Conn) {
-	for {
-		//netData, err :=bufio.NewReader(c).ReadString('\n')
-		d := json.NewDecoder(c)
-		var req common.LoginRequest
-		err := d.Decode(&req)
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			log.Println("error in decoding request", err)
-			continue
-		}
-
-		userID, _, _, err := dbClient.GetClient().GetUser(req.Username, req.Password)
-		if err != nil {
-			c.Write([]byte(err.Error() + "\n"))
-		} else {
-			c.Write([]byte("UserID " + userID + "\n"))
-		}
+func loginHandler(args []string) (respStr string, respErr error){
+	if len(args) != 2 {
+		return "", errors.New("the request received does not follow contract" )
 	}
 
-	c.Close()
+	username := args[0]
+	password := args[1]
+
+	userID, err := dbClient.GetClient().GetUser(username, password)
+	if err != nil {
+		return "", err
+	} else {
+		return userID, nil
+	}
 }

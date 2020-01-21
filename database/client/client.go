@@ -16,7 +16,7 @@ var (
 )
 
 type IDatabaseClient interface {
-	GetUser(username string, password string) (string, string, string, error)
+	GetUser(username string, password string) (userID string, err error)
 }
 
 type DatabaseClientImpl struct {
@@ -45,9 +45,9 @@ func InitClient() {
 	}
 }
 
-func (m *DatabaseClientImpl) GetUser(username string, password string) (string, string, string, error) {
-	stats := m.SQLClient.Stats()
-	log.Printf("Current open DB conns %d\n", stats.OpenConnections)
+func (m *DatabaseClientImpl) GetUser(username string, password string) (string, error) {
+	//stats := m.SQLClient.Stats()
+	//log.Printf("Current open DB conns %d\n", stats.OpenConnections)
 
 	row := m.SQLClient.QueryRow("select id, username, password from users where username = ?", username)
 
@@ -58,14 +58,14 @@ func (m *DatabaseClientImpl) GetUser(username string, password string) (string, 
 	)
 	switch err := row.Scan(&respUserID, &respUsername, &respPassword); err {
 	case sql.ErrNoRows:
-		return "", "", "", errInvalidCredentials
+		return "", errInvalidCredentials
 	case nil:
 		if respPassword != password {
-			return "", "", "", errInvalidCredentials
+			return "", errInvalidCredentials
 		}
-		return respUserID, respUsername, respPassword, nil
+		return respUserID, nil
 	default:
-		panic(err)
-		return "", "", "", err
+		log.Fatal(err)
+		return "", err
 	}
 }

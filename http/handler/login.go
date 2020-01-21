@@ -19,7 +19,9 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := tcpClient.GetClient().SendLoginRequest(&loginReq)
+	tcpReq := constructTcpLoginRequest(loginReq)
+	client := tcpClient.GetClient()
+	userID, err := client.SendRequest(tcpReq)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -27,4 +29,8 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprintln(w, "UserID:", userID)
 	fmt.Fprintln(w, "Login successful!")
+}
+
+func constructTcpLoginRequest(request common.LoginRequest) string {
+	return common.TcpLoginRequest.ToString() + " " + request.Username + " " + request.Password + common.TcpMsgDelimiterStr
 }

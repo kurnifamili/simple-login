@@ -2,9 +2,7 @@ package client
 
 import (
 	"bufio"
-	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"net"
 	"strings"
@@ -18,7 +16,7 @@ var (
 )
 
 type ITcpClient interface {
-	SendLoginRequest(request *common.LoginRequest) (string, error)
+	SendRequest(request string) (response string, err error)
 }
 
 type TcpClientImpl struct {
@@ -46,8 +44,8 @@ func connectionFactory() (net.Conn, error) {
 	return net.Dial("tcp", ":"+common.TcpPort)
 }
 
-func (m *TcpClientImpl) SendLoginRequest(request *common.LoginRequest) (string, error) {
-	fmt.Printf("Current TCP open connections %d\n", m.Pool.Len())
+func (m *TcpClientImpl) SendRequest(request string) (response string, err error) {
+	//fmt.Printf("Current TCP open connections %d\n", m.Pool.Len())
 
 	conn, err := m.Pool.Get()
 	if err != nil {
@@ -56,9 +54,7 @@ func (m *TcpClientImpl) SendLoginRequest(request *common.LoginRequest) (string, 
 	defer conn.Close()
 
 	rw := bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn))
-	enc := json.NewEncoder(rw)
-	err = enc.Encode(request)
-	//rw.WriteString(request.Username + " " + request.Password + common.TcpMsgDelimiterStr)
+	_, err = rw.WriteString(request + common.TcpMsgDelimiterStr)
 	if err != nil {
 		log.Println(err)
 		return "", err
@@ -70,16 +66,17 @@ func (m *TcpClientImpl) SendLoginRequest(request *common.LoginRequest) (string, 
 		return "", err
 	}
 
-	response, err := rw.ReadString(common.TcpMsgDelimiterByte)
+	respStr, err := rw.ReadString(common.TcpMsgDelimiterByte)
 	if err != nil {
 		log.Println(err)
 		return "", err
 	}
 
-	respArr := strings.Split(response, " ")
-	if respArr[0] != "UserID" || len(respArr) != 2 {
-		return "", errors.New(response)
+	respStr = common.TrimSuffix(respStr, common.TcpMsgDelimiterStr)
+	respArr := strings.Split(respStr, " ")
+	if respArr[0] == common.TcpErrorResponse.ToString() {
+		return "", errors.New(strings.Join(respArr[1:], " "))
 	}
-
-	return respArr[1], nil
+	
+	return strings.Join(respArr[1:], " "), nil
 }

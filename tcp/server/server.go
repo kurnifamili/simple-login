@@ -26,6 +26,6 @@ func Start() {
 		}
 
 		// handle the connection
-		go handler.LoginHandler(c)
+		go handler.RouteHandler(c)
 	}
 }
