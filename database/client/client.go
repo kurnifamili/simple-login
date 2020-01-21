@@ -41,15 +41,18 @@ func InitClient() {
 	}
 
 	db.SetMaxOpenConns(common.DBMaxOpenConnections)
-
-	// init prepared statements
-	stmtGetUser, err = db.Prepare("select id, username, password from users where username = ?")
-	if err != nil {
-		log.Fatal(err)
-	}
+	initStatements(db)
 
 	client = &databaseClientImpl{
 		SQLClient: db,
+	}
+}
+
+func initStatements(db *sql.DB) {
+	var err error
+	stmtGetUser, err = db.Prepare("select id, username, password from users where username = ?")
+	if err != nil {
+		log.Fatal(err)
 	}
 }
 
