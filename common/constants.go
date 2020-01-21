@@ -6,6 +6,7 @@ const (
 	TcpPort = "8091"
 	TcpMsgDelimiterStr = "\n"
 	TcpMsgDelimiterByte = '\n'
+	TcpMsgSeparator = " "
 	TcpInitialConnections = 10
 	TcpMaxConnections = 30
 

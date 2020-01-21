@@ -27,9 +27,9 @@ func RouteHandler(c net.Conn) {
 
 		respStr, err := handleRequest(reqStr)
 		if err != nil {
-			c.Write([]byte(common.TcpErrorResponse.ToString() + " " + err.Error() + common.TcpMsgDelimiterStr))
+			c.Write([]byte(common.TcpErrorResponse.ToString() + common.TcpMsgSeparator + err.Error() + common.TcpMsgDelimiterStr))
 		} else {
-			c.Write([]byte(common.TcpSuccessResponse.ToString() +  " " + respStr + common.TcpMsgDelimiterStr))
+			c.Write([]byte(common.TcpSuccessResponse.ToString() +  common.TcpMsgSeparator + respStr + common.TcpMsgDelimiterStr))
 		}
 	}
 
@@ -39,7 +39,7 @@ func RouteHandler(c net.Conn) {
 func handleRequest(reqStr string) (respStr string, respErr error) {
 	// Strip delimiter suffix
 	reqStr = common.TrimSuffix(reqStr, common.TcpMsgDelimiterStr)
-	reqArr := strings.Split(reqStr, " ")
+	reqArr := strings.Split(reqStr, common.TcpMsgSeparator)
 
 	switch common.ParseStrToTcpRequestType(reqArr[0]) {
 	case common.TcpLoginRequest:

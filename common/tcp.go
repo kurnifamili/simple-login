@@ -1,6 +1,9 @@
 package common
 
-import "strconv"
+import (
+	"strconv"
+	"encoding/binary"
+)
 
 type TcpRequestType uint16
 type TcpResponseType uint16
@@ -15,6 +18,12 @@ func (t TcpRequestType) ToInt() int {
 
 func (t TcpRequestType) ToByte() byte {
 	return byte(t)
+}
+
+func (t TcpRequestType) ToBytes() []byte {
+	a := make([]byte, 4)
+	binary.LittleEndian.PutUint16(a, uint16(t))
+	return a
 }
 
 func (t TcpRequestType) ToString() string {
