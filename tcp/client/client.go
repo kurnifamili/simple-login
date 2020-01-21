@@ -77,6 +77,6 @@ func (m *TcpClientImpl) SendRequest(request string) (response string, err error)
 	if respArr[0] == common.TcpErrorResponse.ToString() {
 		return "", errors.New(strings.Join(respArr[1:], " "))
 	}
-	
+
 	return strings.Join(respArr[1:], " "), nil
 }

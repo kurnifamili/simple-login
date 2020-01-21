@@ -12,6 +12,8 @@ import (
 var (
 	client IDatabaseClient
 
+	stmtGetUser *sql.Stmt
+
 	errInvalidCredentials = errors.New("the username and password are not valid")
 )
 
@@ -40,16 +42,22 @@ func InitClient() {
 
 	db.SetMaxOpenConns(common.DBMaxOpenConnections)
 
+	// init prepared statements
+	stmtGetUser, err = db.Prepare("select id, username, password from users where username = ?")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	client = &DatabaseClientImpl{
 		SQLClient: db,
 	}
 }
 
-func (m *DatabaseClientImpl) GetUser(username string, password string) (string, error) {
+func (m *DatabaseClientImpl) GetUser(username string, password string) (userID string, err error) {
 	//stats := m.SQLClient.Stats()
 	//log.Printf("Current open DB conns %d\n", stats.OpenConnections)
 
-	row := m.SQLClient.QueryRow("select id, username, password from users where username = ?", username)
+	row := stmtGetUser.QueryRow(username)
 
 	var (
 		respUserID string
