@@ -5,8 +5,8 @@ import (
 	"errors"
 	"log"
 
-	_ "github.com/go-sql-driver/mysql"
 	"../../common"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 var (
@@ -41,6 +41,8 @@ func InitClient() {
 	}
 
 	db.SetMaxOpenConns(common.DBMaxOpenConnections)
+	db.SetMaxIdleConns(common.DBMaxIdleConnections)
+	//db.SetConnMaxLifetime(time.Duration(time.Second * common.DBConnMaxLifetimeInSecs))
 	initStatements(db)
 
 	client = &databaseClientImpl{
@@ -57,13 +59,13 @@ func initStatements(db *sql.DB) {
 }
 
 func (m *databaseClientImpl) GetUser(username string, password string) (userID string, err error) {
-	//stats := m.SQLClient.Stats()
-	//log.Printf("Current open DB conns %d\n", stats.OpenConnections)
+	stats := m.SQLClient.Stats()
+	log.Printf("open DB conns %d, idle conns %d\n", stats.OpenConnections, stats.Idle)
 
 	row := stmtGetUser.QueryRow(username)
 
 	var (
-		respUserID string
+		respUserID   string
 		respUsername string
 		respPassword string
 	)
@@ -76,7 +78,7 @@ func (m *databaseClientImpl) GetUser(username string, password string) (userID s
 		}
 		return respUserID, nil
 	default:
-		log.Fatal(err)
+		log.Printf(err.Error())
 		return "", err
 	}
 }

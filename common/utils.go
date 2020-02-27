@@ -16,7 +16,7 @@ func TrimSuffix(s string, suffix string) string {
 func ParseStrToTcpRequestType(s string) TcpRequestType {
 	i, err := strconv.ParseInt(s, 10, 16)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf(err.Error())
 	}
 	return TcpRequestType(i)
 }

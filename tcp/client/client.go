@@ -7,8 +7,8 @@ import (
 	"net"
 	"strings"
 
+	connPool "../../conn-pool"
 	"../../common"
-	"github.com/fatih/pool"
 )
 
 var (
@@ -20,7 +20,8 @@ type ITcpClient interface {
 }
 
 type tcpClientImpl struct {
-	Pool pool.Pool
+	//Pool pool.Pool
+	Pool connPool.Pool
 }
 
 func GetClient() ITcpClient {
@@ -31,7 +32,13 @@ func GetClient() ITcpClient {
 }
 
 func InitClient() {
-	connPool, err := pool.NewChannelPool(common.TcpInitialConnections, common.TcpMaxConnections, connectionFactory)
+	//connPool, err := pool.NewChannelPool(common.TcpInitialConnections, common.TcpMaxConnections, connectionFactory)
+	connPoolConfig := &connPool.PoolConfig{
+		InitialConns:        common.TcpInitialConnections,
+		MaxOpenConns:        common.TcpMaxConnections,
+		AllowNewConnOverMax: true,
+	}
+	connPool, err := connPool.NewPool(connPoolConfig, connectionFactory)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -46,10 +53,13 @@ func connectionFactory() (net.Conn, error) {
 
 func (m *tcpClientImpl) SendRequest(request string) (response string, err error) {
 	//fmt.Printf("Current TCP open connections %d\n", m.Pool.Len())
+	//fmt.Printf("Current TCP open connections %d\n", m.Pool.GetOpenConnsLength())
 
-	conn, err := m.Pool.Get()
+	//conn, err := m.Pool.Get()
+	conn, err := m.Pool.GetConn()
 	if err != nil {
 		log.Println("Error in gettting available connection!")
+		return "", err
 	}
 	defer conn.Close()
 
